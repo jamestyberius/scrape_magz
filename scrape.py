@@ -22,4 +22,11 @@ with requests.session() as s:
     r2 = s.get(issues_url)
 
     soup = BeautifulSoup(r2.content, 'html5lib')
-    print(soup.prettify())
+
+    issue_links = []
+    table = soup.select('div.field-content a')
+
+    for row in table:
+         issue_links.append(row['href'])
+
+    print(issue_links)
