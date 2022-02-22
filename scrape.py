@@ -3,10 +3,14 @@ from bs4 import BeautifulSoup
 
 from secret_config import EMAIL, CWPW, FORM_ID, AB_KEY
   
-URL = "https://www.commonwealmagazine.org/"
-login_url = URL + 'front?destination=front'
-issues_url = URL + 'issues'
+URL = "https://www.commonwealmagazine.org"
+login_url = URL + '/front?destination=front'
 
+issues_urls = []
+for x in range(7):
+    issues_urls.append(URL + '/issues?page=' + str(x))
+
+'''
 payload = {
     'name':   EMAIL,
     'pass':   CWPW,
@@ -15,18 +19,25 @@ payload = {
     'antibot_key': AB_KEY,
     'op':	'Log+in'
 }
-
+'''
 
 with requests.session() as s:
-    r = s.post(login_url, data=payload)
-    r2 = s.get(issues_url)
 
-    soup = BeautifulSoup(r2.content, 'html5lib')
+    # Login
+    # r = s.post(login_url, data=payload)
 
-    issue_links = []
-    table = soup.select('div.field-content a')
+    # Go to each issues page
+    i = 0
+    for x in issues_urls:
+        print('Page:' + str(i))
+        r2 = s.get(x)
+        soup = BeautifulSoup(r2.content, 'html5lib')
 
-    for row in table:
-         issue_links.append(row['href'])
-
-    print(issue_links)
+        # Get list of issues on each page
+        table = soup.select('div.field-content a')
+        issue_links = []
+        for row in table:
+            issue = row['href']
+            issue_links.append(issue)
+            print(issue)
+        i += 1
