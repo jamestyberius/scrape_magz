@@ -10,7 +10,7 @@ issues_urls = []
 for x in range(7):
     issues_urls.append(URL + '/issues?page=' + str(x))
 
-'''
+
 payload = {
     'name':   EMAIL,
     'pass':   CWPW,
@@ -19,12 +19,12 @@ payload = {
     'antibot_key': AB_KEY,
     'op':	'Log+in'
 }
-'''
+
 
 with requests.session() as s:
 
     # Login
-    # r = s.post(login_url, data=payload)
+    r = s.post(login_url, data=payload)
 
     # Go to each issues page
     i = 0
@@ -58,6 +58,15 @@ with requests.session() as s:
             r3 = s.get(URL + x)
             soup2 = BeautifulSoup(r3.content, 'html5lib')
 
-            pdf =  soup2.select('div.field-name-download_file a')
-            for x in pdf:
-                print(x['href'])
+            pdf_list =  soup2.select('div.field-name-download_file a')
+            for x in pdf_list:
+                pdf_link = (x['href'])
+
+                # Get response object for link
+                response = s.get(pdf_link)
+        
+                # Write content in pdf file
+                pdf = open('test.pdf', 'wb')
+                pdf.write(response.content)
+                pdf.close()
+                print("File downloaded")
