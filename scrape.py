@@ -5,10 +5,8 @@ from secret_config import EMAIL, CWPW, FORM_ID, AB_KEY
   
 URL = "https://www.commonwealmagazine.org"
 
-issues_urls = []
 
-
-def cw_login(session):
+def cw_login():
 
     login_url = URL + '/front?destination=front'
 
@@ -22,63 +20,63 @@ def cw_login(session):
     }
 
     r = s.post(login_url, data=payload)
-    soup = BeautifulSoup(r.content, 'html5lib')
-    print(soup.prettify())
 
+def get_magz():
+    # pages - issues - pdf
+
+    # Note: No PDFs available prior to 2012
+    for x in range(7):
+        page_soup = get_page(x)
+        # For Testing
+        if x >= 1:
+            break
+        issue_list = get_issues(page_soup)
+        for issue_link in issue_list:
+            pdf_link = get_pdf(issue_link)
+            download_pdf(pdf_link)
+
+
+def get_page(x):
+    # Go to each year page
+    page_url = URL + '/issues?page=' + str(x)
+    print(page_url)
+    print('Page:' + str(x))
+    r = s.get(page_url)
+    soup = BeautifulSoup(r.content, 'html5lib')
+    return soup
+
+def get_issues(soup):
+    # Get list of issues on each page
+    table = soup.select('div.field-content a')
+    issues = []
+    for row in table:
+        issues.append(row['href'])
+
+        # For Testing
+        if len(issues) >= 1:
+            break
+
+    return issues
+
+def get_pdf(issue):
+    r = s.get(URL + issue)
+    print('  Issue: ' + issue)
+    soup = BeautifulSoup(r.content, 'html5lib')
+
+    pdf_list =  soup.select('div.field-name-download_file a')
+    pdf = pdf_list[0]['href']
+    print('  ' + pdf)
+
+    return pdf
+
+def download_pdf(pdf_url):
+    r = s.get(pdf_url)
+    pdf = open('test.pdf', 'wb')
+    pdf.write(r.content)
+    pdf.close()
+    print('  -Downloaded: ' + pdf_url + '\n')
 
 if __name__ == "__main__":
     with requests.session() as s:
-        cw_login(s)
-
-        for x in range(7):
-            issues_urls.append(URL + '/issues?page=' + str(x))
-
-        
-        # Go to each issues page
-        i = 0
-        for x in issues_urls:
-
-            # For Testing
-            if i >= 1:
-                break
-
-            print('Page:' + str(i))
-            r2 = s.get(x)
-            soup = BeautifulSoup(r2.content, 'html5lib')
-
-            # Get list of issues on each page
-            table = soup.select('div.field-content a')
-            issue_links = []
-            for row in table:
-                issue = row['href']
-                issue_links.append(issue)
-                print(issue)
-
-                # For Testing
-                if len(issue_links) >= 1:
-                    break
-
-            i += 1
-
-            # Go to each issue page and download PDF
-            for x in issue_links:
-                print(URL + x)
-                r3 = s.get(URL + x)
-                soup2 = BeautifulSoup(r3.content, 'html5lib')
-
-                pdf_list =  soup2.select('div.field-name-download_file a')
-                for x in pdf_list:
-                    pdf_link = (x['href'])
-                    print(pdf_link)
-                    
-                    # Turn off actual download while testing
-                    '''
-                    # Get response object for link
-                    response = s.get(pdf_link)
-            
-                    # Write content in pdf file
-                    pdf = open('test.pdf', 'wb')
-                    pdf.write(response.content)
-                    pdf.close()
-                    print("File downloaded")
-                    '''
+        cw_login()
+        get_magz()
