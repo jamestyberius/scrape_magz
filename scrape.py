@@ -22,12 +22,12 @@ def cw_login():
     r = s.post(login_url, data=payload)
 
 def get_magz():
-    # Note: No PDFs available prior to 2012
+    # Note: This works when entire issues come in one PDF (2013 - )
+
+    ## TODO: Individual articles are available on issues pages fdor (? - 2012)
+
     for x in range(7):
         page_soup = get_page(x)
-        # For Testing
-        if x >= 1:
-            break
         issue_list = get_issues(page_soup)
         for issue_link in issue_list:
             pdf_link = get_pdf(issue_link)
@@ -49,10 +49,6 @@ def get_issues(soup):
     issues = []
     for row in table:
         issues.append(row['href'])
-
-        # For Testing
-        if len(issues) >= 1:
-            break
 
     return issues
 
