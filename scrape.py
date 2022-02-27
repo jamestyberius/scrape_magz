@@ -22,8 +22,6 @@ def cw_login():
     r = s.post(login_url, data=payload)
 
 def get_magz():
-    # pages - issues - pdf
-
     # Note: No PDFs available prior to 2012
     for x in range(7):
         page_soup = get_page(x)
@@ -71,10 +69,11 @@ def get_pdf(issue):
 
 def download_pdf(pdf_url):
     r = s.get(pdf_url)
-    pdf = open('test.pdf', 'wb')
+    pdf_name = pdf_url.split('/')[-1]
+    pdf = open(pdf_name, 'wb')
     pdf.write(r.content)
     pdf.close()
-    print('  -Downloaded: ' + pdf_url + '\n')
+    print('  -Downloaded: ' + pdf_name + '\n')
 
 if __name__ == "__main__":
     with requests.session() as s:
